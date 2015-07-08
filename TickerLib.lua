@@ -133,27 +133,29 @@ function TickChunk(World, TimeDelta, a_Chunk)
 
 	local WorldName = World:GetName()
 
-	if TickRegistry[WorldName][BlockType] ~= nil then
-		if TickRegistry[WorldName][BlockType][BlockMeta] ~= nil then
-			for i,callback in ipairs(TickRegistry[WorldName][BlockType][BlockMeta]) do
+	local TickReg = TickRegistry[WorldName]
+
+	if TickReg[BlockType] ~= nil then
+		if TickReg[BlockType][BlockMeta] ~= nil then
+			for i,callback in ipairs(TickReg[BlockType][BlockMeta]) do
 				if callback.remove ~= true then
 					if callback.theCallback(World, TickX, TickY, TickZ, BlockType, BlockMeta, SkyLight, BlockLight) then
 						break
 					end
 				else
-					TickRegistry[WorldName][BlockType][BlockMeta][i] = nil
+					TickReg[BlockType][BlockMeta][i] = nil
 				end
 			end
 		end
 
-		if TickRegistry[WorldName][BlockType][E_META_ANY] ~= nil then
-			for i,callback in ipairs(TickRegistry[WorldName][BlockType][E_META_ANY]) do
+		if TickReg[BlockType][E_META_ANY] ~= nil then
+			for i,callback in ipairs(TickReg[BlockType][E_META_ANY]) do
 				if callback.remove ~= true then
 					if callback.theCallback(World, TickX, TickY, TickZ, BlockType, BlockMeta, SkyLight, BlockLight) then
 						break
 					end
 				else
-					TickRegistry[WorldName][BlockType][E_META_ANY][i] = nil
+					TickReg[BlockType][E_META_ANY][i] = nil
 				end
 			end
 		end
@@ -161,14 +163,14 @@ function TickChunk(World, TimeDelta, a_Chunk)
 
 	Valid, BlockType, BlockMeta, SkyLight, BlockLight = World:GetBlockInfo(TickX, TickY, TickZ)
 
-	if TickRegistry[WorldName][E_BLOCK_ANY] ~= nil and TickRegistry[WorldName][E_BLOCK_ANY][E_META_ANY] ~= nil then
-		for i,callback in ipairs(TickRegistry[WorldName][E_BLOCK_ANY][E_META_ANY]) do
+	if TickReg[E_BLOCK_ANY] ~= nil and TickReg[E_BLOCK_ANY][E_META_ANY] ~= nil then
+		for i,callback in ipairs(TickReg[E_BLOCK_ANY][E_META_ANY]) do
 			if callback.remove ~= true then
 				if callback.theCallback(World, TickX, TickY, TickZ, BlockType, BlockMeta, SkyLight, BlockLight) then
 					break
 				end
 			else
-				TickRegistry[WorldName][E_BLOCK_ANY][E_META_ANY][i] = nil
+				TickReg[E_BLOCK_ANY][E_META_ANY][i] = nil
 			end
 		end
 	end
