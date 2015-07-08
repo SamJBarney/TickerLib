@@ -49,17 +49,21 @@ function RegisterTickerCallback(WorldName, BlockId, BlockMeta, a_Callback)
 end
 
 function UnregisterTickerCallback(WorldName, BlockId, BlockMeta, a_Callback)
+	-- Return false if the callback isn't already in the registry
 	if TickRegistry[WorldName] == nil or TickRegistry[WorldName][BlockId] == nil or TickRegistry[WorldName][BlockId][BlockMeta] == nil then
 		return false
 	end
 
+
 	for i,callback in ipairs(TickRegistry[WorldName][BlockId][BlockMeta]) do
+		-- If the callbacks match, then mark it for removal on the next World Tick
 		if callback.theCallback == a_Callback then
 			callback.remove = true
 			return true
 		end
 	end
 
+	-- Return false if the callback isn't in the registry
 	return false
 end
 
@@ -84,6 +88,7 @@ end
 
 function OnWorldTick(World, TimeDelta)
 	local WorldName = World:GetName()
+	-- Only tick chunks for worlds that have a callback registered, and have chunks loaded
 	if TickRegistry[WorldName] ~= nil and ChunkRegistry[WorldName] ~= nil then
 		local ChunkReg = ChunkRegistry[WorldName]
 		for _, chunk in pairs(ChunkReg) do
@@ -107,7 +112,7 @@ end
 
 function TickChunk(World, TimeDelta, a_Chunk)
 	
-	
+	-- Calculate the block position to tick
 	local RandomX = math.random(0,16777215)
 	local RandomY = math.random(0,16777215)
 	local RandomZ = math.random(0,16777215)
@@ -125,6 +130,7 @@ function TickChunk(World, TimeDelta, a_Chunk)
 		a_Chunk.TickZ = math.floor(TickZ / 2)
 	end
 
+	-- Convert from a chunk-relative position to an absolute position
 	TickX = a_Chunk.TickX + a_Chunk.x * CHUNK_WIDTH
 	TickZ = a_Chunk.TickZ + a_Chunk.z * CHUNK_WIDTH
 	TickY = a_Chunk.TickY
@@ -135,10 +141,17 @@ function TickChunk(World, TimeDelta, a_Chunk)
 
 	local TickReg = TickRegistry[WorldName]
 
+
+	-- If there are callbacks registered for this BlockType
 	if TickReg[BlockType] ~= nil then
+
+		-- If there are callbacks registered for this specific BlockMeta
 		if TickReg[BlockType][BlockMeta] ~= nil then
+			-- Iterate through the callbacks
 			for i,callback in ipairs(TickReg[BlockType][BlockMeta]) do
+				-- If the callback has been marked for removal, then remove it
 				if callback.remove ~= true then
+					-- If the callback returned true, then stop iterating through the callbacks
 					if callback.theCallback(World, TickX, TickY, TickZ, BlockType, BlockMeta, SkyLight, BlockLight) then
 						break
 					end
@@ -148,9 +161,13 @@ function TickChunk(World, TimeDelta, a_Chunk)
 			end
 		end
 
+		-- If there are callbacks registered for this BlockType with any meta value
 		if TickReg[BlockType][E_META_ANY] ~= nil then
+			-- Iterate through the callbacks
 			for i,callback in ipairs(TickReg[BlockType][E_META_ANY]) do
+				-- If the callback has been marked for removal, then remove it
 				if callback.remove ~= true then
+					-- If the callback returned true, then stop iterating through the callbacks
 					if callback.theCallback(World, TickX, TickY, TickZ, BlockType, BlockMeta, SkyLight, BlockLight) then
 						break
 					end
@@ -163,9 +180,13 @@ function TickChunk(World, TimeDelta, a_Chunk)
 
 	Valid, BlockType, BlockMeta, SkyLight, BlockLight = World:GetBlockInfo(TickX, TickY, TickZ)
 
+	-- If there are callbacks registered for any BlockType 
 	if TickReg[E_BLOCK_ANY] ~= nil and TickReg[E_BLOCK_ANY][E_META_ANY] ~= nil then
+			-- Iterate through the callbacks
 		for i,callback in ipairs(TickReg[E_BLOCK_ANY][E_META_ANY]) do
+				-- If the callback has been marked for removal, then remove it
 			if callback.remove ~= true then
+					-- If the callback returned true, then stop iterating through the callbacks
 				if callback.theCallback(World, TickX, TickY, TickZ, BlockType, BlockMeta, SkyLight, BlockLight) then
 					break
 				end
