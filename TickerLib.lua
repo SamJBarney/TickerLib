@@ -19,6 +19,7 @@ function TickerSetup()
 end
 
 function RegisterTickerCallback(WorldName, BlockId, BlockMeta, a_Callback)
+	-- Create the TickRegistry containers
 	if TickRegistry[WorldName] == nil then
 		TickRegistry[WorldName] = {}
 		TickRegistry[WorldName][BlockId] = {}
